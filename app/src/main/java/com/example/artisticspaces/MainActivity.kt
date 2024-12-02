@@ -1,12 +1,12 @@
 package com.example.artisticspaces
 
-import android.annotation.SuppressLint
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.view.Surface
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -33,6 +33,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import android.Manifest
 
 class MainActivity : ComponentActivity() {
 
@@ -40,8 +41,37 @@ class MainActivity : ComponentActivity() {
     private lateinit var scene: Scene
     private lateinit var assetLoader: AssetLoader
 
+    // Register the permission request launcher
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (!isGranted) {
+                // Permission denied, inform the user
+                Toast.makeText(
+                    this,
+                    "Camera permission is required to use this feature.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    private fun checkCameraPermission() {
+        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+            // Show rationale and request permission
+            Toast.makeText(
+                this,
+                "Camera access is needed for AR capabilities.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        // Launch the permission request
+        requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Check if camera permissions are granted.
+        checkCameraPermission()
 
         // Initialize Filament Engine
         filamentEngine = Engine.create()
@@ -54,18 +84,12 @@ class MainActivity : ComponentActivity() {
         assetLoader = AssetLoader(filamentEngine, UbershaderProvider(filamentEngine), entityManager)
 
         setContent {
-            ARPlacementApp()
+            Box(modifier = Modifier.fillMaxSize()) {
+                ARSceneView()
+            }
         }
     }
 
-    @Composable
-    fun ARPlacementApp() {
-        Box(modifier = Modifier.fillMaxSize()) {
-            ARSceneView()
-        }
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
     @Composable
     fun ARSceneView() {
         // Assuming filamentEngine is already initialized, and camera and scene are set up
