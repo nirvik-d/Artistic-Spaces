@@ -116,7 +116,7 @@ class MainActivity : ComponentActivity() {
                             assetLoader = AssetLoader(filamentEngine, materialProvider, entityManager)
 
                             // Load the GLB Model
-                            val asset: FilamentAsset? = context.assets.open("src/models/model.glb").use { inputStream ->
+                            val asset: FilamentAsset? = context.assets.open("src/models/cube.glb").use { inputStream ->
                                 val size = inputStream.available()
                                 val byteBuffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder())
                                 val bytes = ByteArray(size)
